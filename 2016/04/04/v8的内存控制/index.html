@@ -1,0 +1,52 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> v8的内存控制 · kukuv Blog</title><meta name="description" content="v8的内存控制 - kukuv"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="short icon" href="/favicon.png"><link rel="stylesheet" href="/css/apollo.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,600" type="text/css"></head><body><header><a href="/" class="logo-link"><img src="/favicon.png"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="http://weibo.com/sunchongsheng" target="_blank" class="nav-list-link">WEIBO</a></li><li class="nav-list-item"><a href="https://github.com/pinggod" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><section class="container"><div class="post"><article class="post-block"><h1 class="post-title">v8的内存控制</h1><div class="post-time">2016年4月4日</div><div class="post-content"><h3 id="v8内存限制"><a href="#v8内存限制" class="headerlink" title="v8内存限制"></a>v8内存限制</h3><p>64位1.4G</p>
+<h3 id="内存空间分配"><a href="#内存空间分配" class="headerlink" title="内存空间分配"></a>内存空间分配</h3><p>新老生代内存空间 -需启动时指定</p>
+<ul>
+<li>新生代空间 64位 32M<ul>
+<li>两块reversed semispace</li>
+</ul>
+</li>
+<li>老生代空间 64位 1.4G</li>
+<li>总的保留内存空间 4*reversed-semispace-size+max_old_generation_size</li>
+</ul>
+<h3 id="回收算法"><a href="#回收算法" class="headerlink" title="回收算法"></a>回收算法</h3><h4 id="新生代Scanvenge"><a href="#新生代Scanvenge" class="headerlink" title="新生代Scanvenge"></a>新生代Scanvenge</h4><p>分为from和to两个空间,每次出发Gc时,将from移往to然后将from空间清空.</p>
+<h4 id="新生代晋升老生代"><a href="#新生代晋升老生代" class="headerlink" title="新生代晋升老生代"></a>新生代晋升老生代</h4><ol>
+<li>from中已经经历过Scanvenge将直接进入老生代</li>
+<li>当to空间已经使用了25%(原因:为了后续的内存分配)</li>
+</ol>
+<h4 id="老生代Mark-sweep-Mark-compact"><a href="#老生代Mark-sweep-Mark-compact" class="headerlink" title="老生代Mark-sweep,Mark-compact"></a>老生代Mark-sweep,Mark-compact</h4><ul>
+<li>降低回收时间<ul>
+<li>Incremental marking</li>
+<li>lazy sweeping</li>
+<li>incremental compaction</li>
+</ul>
+</li>
+</ul>
+<h3 id="查看垃圾回收日志"><a href="#查看垃圾回收日志" class="headerlink" title="查看垃圾回收日志"></a>查看垃圾回收日志</h3><h4 id="node参数"><a href="#node参数" class="headerlink" title="node参数"></a>node参数</h4><ul>
+<li>trace_gc</li>
+<li>prof<ul>
+<li>v8提供linux-tick-processor工具统计结果</li>
+</ul>
+</li>
+</ul>
+<h3 id="高效使用内存"><a href="#高效使用内存" class="headerlink" title="高效使用内存"></a>高效使用内存</h3><ul>
+<li>delete影响v8优化</li>
+<li><em>闭包</em>和<em>全局对象</em>引用会导致对象进入老生代</li>
+</ul>
+<h3 id="查看内存使用情况"><a href="#查看内存使用情况" class="headerlink" title="查看内存使用情况"></a>查看内存使用情况</h3><p>内存概念:</p>
+<ul>
+<li>rss : resident set size</li>
+</ul>
+<p>process:</p>
+<ul>
+<li>memoryUsage</li>
+</ul>
+<p>os:</p>
+<ul>
+<li>totalmem</li>
+<li>freemem</li>
+</ul>
+<h3 id="内存泄露排查"><a href="#内存泄露排查" class="headerlink" title="内存泄露排查"></a>内存泄露排查</h3><ul>
+<li>node-headdump</li>
+<li>node-memwatch</li>
+</ul>
+</div></article></div></section><footer><div class="paginator"><a href="/2016/03/13/nodejs/sails学习/" class="next">下一篇</a></div><div class="copyright"><p>© 2015 - 2016 <a href="http://yoursite.com">kukuv</a>, unless otherwise noted.</p></div></footer><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-65933410-1",'auto');ga('send','pageview');</script><script>var _hmt = _hmt || [];(function() {var hm = document.createElement("script");hm.src = "//hm.baidu.com/hm.js?a36e15d9e2adec9a21fcdd9f686b1ed2";var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm, s);})();</script><script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script></body></html>

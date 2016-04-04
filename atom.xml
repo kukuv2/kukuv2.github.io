@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>kukuv Blog</title>
+  
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="http://yoursite.com/"/>
+  <updated>2016-04-04T04:22:03.000Z</updated>
+  <id>http://yoursite.com/</id>
+  
+  <author>
+    <name>kukuv</name>
+    
+  </author>
+  
+  <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>v8的内存控制</title>
+    <link href="http://yoursite.com/2016/04/04/v8%E7%9A%84%E5%86%85%E5%AD%98%E6%8E%A7%E5%88%B6/"/>
+    <id>http://yoursite.com/2016/04/04/v8的内存控制/</id>
+    <published>2016-04-04T04:22:03.000Z</published>
+    <updated>2016-04-04T04:22:03.000Z</updated>
+    
+    <content type="html">&lt;h3 id=&quot;v8内存限制&quot;&gt;&lt;a href=&quot;#v8内存限制&quot; class=&quot;headerlink&quot; title=&quot;v8内存限制&quot;&gt;&lt;/a&gt;v8内存限制&lt;/h3&gt;&lt;p&gt;64位1.4G&lt;/p&gt;
+&lt;h3 id=&quot;内存空间分配&quot;&gt;&lt;a href=&quot;#内存空间分配&quot; class=&quot;headerlink&quot; title=&quot;内存空间分配&quot;&gt;&lt;/a&gt;内存空间分配&lt;/h3&gt;&lt;p&gt;新老生代内存空间 -需启动时指定&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;新生代空间 64位 32M&lt;ul&gt;
+&lt;li&gt;两块reversed semispace&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;老生代空间 64位 1.4G&lt;/li&gt;
+&lt;li&gt;总的保留内存空间 4*reversed-semispace-size+max_old_generation_size&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;回收算法&quot;&gt;&lt;a href=&quot;#回收算法&quot; class=&quot;headerlink&quot; title=&quot;回收算法&quot;&gt;&lt;/a&gt;回收算法&lt;/h3&gt;&lt;h4 id=&quot;新生代Scanvenge&quot;&gt;&lt;a href=&quot;#新生代Scanvenge&quot; class=&quot;headerlink&quot; title=&quot;新生代Scanvenge&quot;&gt;&lt;/a&gt;新生代Scanvenge&lt;/h4&gt;&lt;p&gt;分为from和to两个空间,每次出发Gc时,将from移往to然后将from空间清空.&lt;/p&gt;
+&lt;h4 id=&quot;新生代晋升老生代&quot;&gt;&lt;a href=&quot;#新生代晋升老生代&quot; class=&quot;headerlink&quot; title=&quot;新生代晋升老生代&quot;&gt;&lt;/a&gt;新生代晋升老生代&lt;/h4&gt;&lt;ol&gt;
+&lt;li&gt;from中已经经历过Scanvenge将直接进入老生代&lt;/li&gt;
+&lt;li&gt;当to空间已经使用了25%(原因:为了后续的内存分配)&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4 id=&quot;老生代Mark-sweep-Mark-compact&quot;&gt;&lt;a href=&quot;#老生代Mark-sweep-Mark-compact&quot; class=&quot;headerlink&quot; title=&quot;老生代Mark-sweep,Mark-compact&quot;&gt;&lt;/a&gt;老生代Mark-sweep,Mark-compact&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;降低回收时间&lt;ul&gt;
+&lt;li&gt;Incremental marking&lt;/li&gt;
+&lt;li&gt;lazy sweeping&lt;/li&gt;
+&lt;li&gt;incremental compaction&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;查看垃圾回收日志&quot;&gt;&lt;a href=&quot;#查看垃圾回收日志&quot; class=&quot;headerlink&quot; title=&quot;查看垃圾回收日志&quot;&gt;&lt;/a&gt;查看垃圾回收日志&lt;/h3&gt;&lt;h4 id=&quot;node参数&quot;&gt;&lt;a href=&quot;#node参数&quot; class=&quot;headerlink&quot; title=&quot;node参数&quot;&gt;&lt;/a&gt;node参数&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;trace_gc&lt;/li&gt;
+&lt;li&gt;prof&lt;ul&gt;
+&lt;li&gt;v8提供linux-tick-processor工具统计结果&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;高效使用内存&quot;&gt;&lt;a href=&quot;#高效使用内存&quot; class=&quot;headerlink&quot; title=&quot;高效使用内存&quot;&gt;&lt;/a&gt;高效使用内存&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;delete影响v8优化&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;闭包&lt;/em&gt;和&lt;em&gt;全局对象&lt;/em&gt;引用会导致对象进入老生代&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;查看内存使用情况&quot;&gt;&lt;a href=&quot;#查看内存使用情况&quot; class=&quot;headerlink&quot; title=&quot;查看内存使用情况&quot;&gt;&lt;/a&gt;查看内存使用情况&lt;/h3&gt;&lt;p&gt;内存概念:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;rss : resident set size&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;process:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;memoryUsage&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;os:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;totalmem&lt;/li&gt;
+&lt;li&gt;freemem&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;内存泄露排查&quot;&gt;&lt;a href=&quot;#内存泄露排查&quot; class=&quot;headerlink&quot; title=&quot;内存泄露排查&quot;&gt;&lt;/a&gt;内存泄露排查&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;node-headdump&lt;/li&gt;
+&lt;li&gt;node-memwatch&lt;/li&gt;
+&lt;/ul&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;h3 id=&quot;v8内存限制&quot;&gt;&lt;a href=&quot;#v8内存限制&quot; class=&quot;headerlink&quot; title=&quot;v8内存限制&quot;&gt;&lt;/a&gt;v8内存限制&lt;/h3&gt;&lt;p&gt;64位1.4G&lt;/p&gt;
+&lt;h3 id=&quot;内存空间分配&quot;&gt;&lt;a href=&quot;#内存空间分配&quot; class=&quot;h
+    
+    </summary>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>sails学习</title>
+    <link href="http://yoursite.com/2016/03/13/nodejs/sails%E5%AD%A6%E4%B9%A0/"/>
+    <id>http://yoursite.com/2016/03/13/nodejs/sails学习/</id>
+    <published>2016-03-13T02:02:45.000Z</published>
+    <updated>2016-03-13T02:02:45.000Z</updated>
+    
+    <content type="html">&lt;h2 id=&quot;我对sails的理解&quot;&gt;&lt;a href=&quot;#我对sails的理解&quot; class=&quot;headerlink&quot; title=&quot;我对sails的理解&quot;&gt;&lt;/a&gt;我对sails的理解&lt;/h2&gt;&lt;p&gt;之前用express+mongoose写过一个外包网站,express+mongoose写一些小网站来说确实很快,但当route,service,model这些东西一多起来,整个程序就会显得很乱,很难维护.这时候我们就需要更多的抽象,更多的约束,更多的封装.&lt;/p&gt;
+&lt;p&gt;sails的设计理念大部分借鉴了非常流行的rails,虽然说sails目前有很多不足的地方(比如对generator的支持(相比koa);使用了自己的waterline而不是大家喜欢的mongoose等等)&lt;/p&gt;
+&lt;h2 id=&quot;sails如何lift&quot;&gt;&lt;a href=&quot;#sails如何lift&quot; class=&quot;headerlink&quot; title=&quot;sails如何lift&quot;&gt;&lt;/a&gt;sails如何lift&lt;/h2&gt;&lt;p&gt;我画了一个sails.lift的脑图 &lt;a href=&quot;http://naotu.baidu.com/file/33ef136563234f5ee4985d864ed40aa5?token=675569bff4c14d45&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;sails.lift脑图&lt;/a&gt;,越是层次结构深的代码,画脑图对你阅读代码的帮助越大.&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;我对sails的理解&quot;&gt;&lt;a href=&quot;#我对sails的理解&quot; class=&quot;headerlink&quot; title=&quot;我对sails的理解&quot;&gt;&lt;/a&gt;我对sails的理解&lt;/h2&gt;&lt;p&gt;之前用express+mongoose写过一个外包网站,express+mo
+    
+    </summary>
+    
+      <category term="nodeJs" scheme="http://yoursite.com/categories/nodeJs/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>javascript的基本类型和与操作符结合时的类型转换</title>
+    <link href="http://yoursite.com/2016/02/28/goToFrontEnd/js/javascript%E7%9A%84%E5%9F%BA%E6%9C%AC%E7%B1%BB%E5%9E%8B%E5%92%8C%E4%B8%8E%E6%93%8D%E4%BD%9C%E7%AC%A6%E7%BB%93%E5%90%88%E6%97%B6%E7%9A%84%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2/"/>
+    <id>http://yoursite.com/2016/02/28/goToFrontEnd/js/javascript的基本类型和与操作符结合时的类型转换/</id>
+    <published>2016-02-28T07:05:37.000Z</published>
+    <updated>2016-02-28T07:05:37.000Z</updated>
+    
+    <content type="html">&lt;h2 id=&quot;javascript-的基本类型&quot;&gt;&lt;a href=&quot;#javascript-的基本类型&quot; class=&quot;headerlink&quot; title=&quot;javascript 的基本类型&quot;&gt;&lt;/a&gt;javascript 的基本类型&lt;/h2&gt;&lt;p&gt;javascript的基本类型和类型转换系统相较于其他语言例如 Java 来说可以说是非常混乱的.这个是许多新手必定会遇到的坑.首先javascript 有五种简单的基本类型(undefined,null,Number,Boolean,String).和一种复杂的数据类型object.  &lt;/p&gt;
+&lt;p&gt;类型检测有两种方式 typeof 和 instanceof . &lt;/p&gt;
+&lt;p&gt;instanceof用来检测对象的原型链. 但有时候 instanceof 也会不好用比如不同window.frames[0]里的 Array检测,对于已经实现了 toString 方法的类型,我们可以用Object.prototype.toString.call(obj) 来检测,得到结果类似[object Array].&lt;/p&gt;
+&lt;p&gt;typeof : 因为NaN属于 number 的一种所以 typeof NaN === ‘number’ ; 在javascript 里 Object,String等都是一种构造函数,所以 typeof Object === ‘function’,typeof String === ‘function’.&lt;br&gt;typeof 所有的检测结果如下:&lt;br&gt;&lt;img src=&quot;/images/2016-02-2611.11.45.png&quot; alt=&quot;img&quot;&gt;&lt;/p&gt;
+&lt;h2 id=&quot;与操作符结合后的-javascript-类型转换&quot;&gt;&lt;a href=&quot;#与操作符结合后的-javascript-类型转换&quot; class=&quot;headerlink&quot; title=&quot;与操作符结合后的 javascript 类型转换&quot;&gt;&lt;/a&gt;与操作符结合后的 javascript 类型转换&lt;/h2&gt;&lt;pre&gt;&lt;code&gt;弱类型的 javascript 的许多操作符会自动类型转换,很多时候转换后的
+结果会让人吃惊.下面我们来总结一下:
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;1-尝试将两个变量转换为数值-调用-Number-的操作符-一元操作符-–-乘性操作符&quot;&gt;&lt;a href=&quot;#1-尝试将两个变量转换为数值-调用-Number-的操作符-一元操作符-–-乘性操作符&quot; class=&quot;headerlink&quot; title=&quot;1. 尝试将两个变量转换为数值(调用 Number())的操作符 :一元操作符 ++,–;乘性操作符 *,&quot;&gt;&lt;/a&gt;1. 尝试将两个变量转换为数值(调用 Number())的操作符 :一元操作符 ++,–;乘性操作符 *,&lt;/h3&gt;&lt;pre&gt;&lt;code&gt;    Number的转换规则是 
+    1.1 如果是string:
+        1.1.1 判断是否能转换为数值含有字母和其他非.符号的直接返回 
+NaN ; 1.0 , .1 均可以转换为数值 ,.1.1含两个以上的不能转换为数值.
+        1.1.2 能转换为数值的返回对应数值.
+    1.2 如果是boolean:
+        1.2.1 true 转换为0;
+        1.2.2 false 转换为1;
+    1.3 如果是 undefined: 转换为 NaN
+    1.4 如果是 null 转换为 0
+    1.5 如果是 Object var result = obj.valueof(); return Number(result) 如果得到 NaN,再调用 toString
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;2-尝试将两个变量转换为布尔值-布尔操作符-条件操作符&quot;&gt;&lt;a href=&quot;#2-尝试将两个变量转换为布尔值-布尔操作符-条件操作符&quot; class=&quot;headerlink&quot; title=&quot;2. 尝试将两个变量转换为布尔值: 布尔操作符 !;条件操作符 ? :&quot;&gt;&lt;/a&gt;2. 尝试将两个变量转换为布尔值: 布尔操作符 !;条件操作符 ? :&lt;/h3&gt;&lt;pre&gt;&lt;code&gt;Boolean的转换规则是:
+2.1 如果是string: 空字符串&amp;apos;&amp;apos;返回 false ,其他返回 true.(注意 new String(&amp;apos;&amp;apos;) 属于对象)
+2.2 如果是number: 0返回 false,其他 true
+2.3 undefined 和 null 返回 false
+2.4 object : 返回true
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;3-先判断是要转换为哪种基本类型-再做转换-加性-条件-gt-lt-非严格相等&quot;&gt;&lt;a href=&quot;#3-先判断是要转换为哪种基本类型-再做转换-加性-条件-gt-lt-非严格相等&quot; class=&quot;headerlink&quot; title=&quot;3. 先判断是要转换为哪种基本类型,再做转换. 加性:+;条件&amp;gt;,&amp;lt;;非严格相等 ==&quot;&gt;&lt;/a&gt;3. 先判断是要转换为哪种基本类型,再做转换. 加性:+;条件&amp;gt;,&amp;lt;;非严格相等 ==&lt;/h3&gt;&lt;h4 id=&quot;3-1-加性&quot;&gt;&lt;a href=&quot;#3-1-加性&quot; class=&quot;headerlink&quot; title=&quot;3.1 加性 +,-&quot;&gt;&lt;/a&gt;3.1 加性 +,-&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;3.1.1如果两个都是数值正常计算 infinity,-infinity 和 +0,-0 略过..
+3.1.2如果两个都是字符串拼接.
+3.1.3如果只有一个是字符串,将另一个转换为字符串.
+3.1.4如果有一个是对象,尝试转换为字符串
+3.1.5如果两个都不是字符串,且其中一个是数值,将另一个转换为数值.
+3.1.6其他情况都是 NaN
+&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&quot;3-2-条件-gt-lt&quot;&gt;&lt;a href=&quot;#3-2-条件-gt-lt&quot; class=&quot;headerlink&quot; title=&quot;3.2 条件 &amp;gt;,&amp;lt;&quot;&gt;&lt;/a&gt;3.2 条件 &amp;gt;,&amp;lt;&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;3.2.1两个都是数值,数值比较
+3.2.2两个都是字符串,字符编码比较 (注意 A&amp;lt;a)
+3.2.3其中一个是 NaN ,false
+3.2.4其中一个是数值,转换另一个为数值
+3.2.5对象先尝试转换为数值,不行字符串再比较
+3.2.6布尔转换为数值.
+&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&quot;3-3-不严格相等-不同类型是&quot;&gt;&lt;a href=&quot;#3-3-不严格相等-不同类型是&quot; class=&quot;headerlink&quot; title=&quot;3.3 不严格相等 == 不同类型是&quot;&gt;&lt;/a&gt;3.3 不严格相等 == 不同类型是&lt;/h4&gt;&lt;pre&gt;&lt;code&gt;3.3.1布尔值先转换为数值
+3.3.2一个是字符串,一个是数值.字符串转换为数值
+3.3.3对象调用 valueof(),再比较
+3.3.4 == 有 NaN,就为 fasle ;!= 有 NaN ,就为 true
+3.3.5 undefined == null ,undefined 和 null 不会转换为其他类型进行比较.
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;4-if-语句-使用-Boolean&quot;&gt;&lt;a href=&quot;#4-if-语句-使用-Boolean&quot; class=&quot;headerlink&quot; title=&quot;4.if 语句 使用 Boolean()&quot;&gt;&lt;/a&gt;4.if 语句 使用 Boolean()&lt;/h3&gt;&lt;p&gt;部分内容来源于 :&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Javascript 高级程序设计, MDN和网络&lt;/p&gt;
+&lt;/blockquote&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;javascript-的基本类型&quot;&gt;&lt;a href=&quot;#javascript-的基本类型&quot; class=&quot;headerlink&quot; title=&quot;javascript 的基本类型&quot;&gt;&lt;/a&gt;javascript 的基本类型&lt;/h2&gt;&lt;p&gt;javascript的基本类
+    
+    </summary>
+    
+      <category term="goToFrontEnd" scheme="http://yoursite.com/categories/goToFrontEnd/"/>
+    
+      <category term="js" scheme="http://yoursite.com/categories/goToFrontEnd/js/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>网页缓存cache二三事</title>
+    <link href="http://yoursite.com/2016/02/28/goToFrontEnd/%E7%BD%91%E9%A1%B5%E7%BC%93%E5%AD%98cache%E4%BA%8C%E4%B8%89%E4%BA%8B/"/>
+    <id>http://yoursite.com/2016/02/28/goToFrontEnd/网页缓存cache二三事/</id>
+    <published>2016-02-28T06:58:24.000Z</published>
+    <updated>2016-02-28T06:58:24.000Z</updated>
+    
+    <content type="html">&lt;h2 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h2&gt;&lt;p&gt;一个网页是如何在浏览器上进行缓存的,其中涉及了哪些机制,有哪些技术可以采用,如何才能最大化利用缓存.个人觉得这些知识点都是一个前端工程师必须了解的.曾经在面试的时候被问过一个问题,”有没有不返回304,同时又使用了缓存的情况?”.当时因为对缓存机制了解不深,所以答不上来.下面我总结一下这方面的知识.&lt;/p&gt;
+&lt;h2 id=&quot;通过-HTTP-报头&quot;&gt;&lt;a href=&quot;#通过-HTTP-报头&quot; class=&quot;headerlink&quot; title=&quot;通过 HTTP 报头&quot;&gt;&lt;/a&gt;通过 HTTP 报头&lt;/h2&gt;&lt;h3 id=&quot;Cache-Control-Expires-响应报头&quot;&gt;&lt;a href=&quot;#Cache-Control-Expires-响应报头&quot; class=&quot;headerlink&quot; title=&quot;Cache-Control,Expires(响应报头)&quot;&gt;&lt;/a&gt;Cache-Control,Expires(响应报头)&lt;/h3&gt;&lt;p&gt;这两个响应报头是浏览器缓存机制的第一道坎.当你发起一个 GET 请求时,服务器返回的响应报头里含有这两个报头,那么你下一次发起请求时(以某种方式, F5刷新除外),在你设置的资源过期时间前浏览器都不会再次请求服务器,而是直接使用已经缓存的版本.并且 status code 是200.这也是我上面说的不是只有返回了304才会使用缓存&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://segmentfault.com/img/bVqjrp&quot; alt=&quot;clipboard.png&quot;&gt;&lt;br&gt;在 chrome 里我们可以清楚的看到 status code 旁边写的是(from cache).响应报头大致的形式也就是像上面那张图一样.&lt;/p&gt;
+&lt;h3 id=&quot;Last-Modified-ETag-响应报头-If-Modified-Since-If-None-Match-请求报头&quot;&gt;&lt;a href=&quot;#Last-Modified-ETag-响应报头-If-Modified-Since-If-None-Match-请求报头&quot; class=&quot;headerlink&quot; title=&quot;Last-Modified,ETag(响应报头);If-Modified-Since,If-None-Match(请求报头)&quot;&gt;&lt;/a&gt;Last-Modified,ETag(响应报头);If-Modified-Since,If-None-Match(请求报头)&lt;/h3&gt;&lt;p&gt;这几个报头可以说是浏览器缓存机制里的第二道坎.当你请求某个资源时,如上面的图,响应报头会设置 Last-Modified 和 ETag,Last-Modified 是这个资源的最后修改时间, ETag 是该资源的唯一标识符.这两个值会在你再一次请求该资源时以 If-Modified-Since 和 If-None-Match 的形式附在请求头里发给服务器由服务器判读该资源是否过期.如果没过期,返回304,如果过期了,返回带有响应主体也就是 content并且status code为200的响应.请求报头大致如下.这个过程称为服务器再认证.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://segmentfault.com/img/bVqjrT&quot; alt=&quot;clipboard.png&quot;&gt;&lt;/p&gt;
+&lt;h3 id=&quot;这两种报头的作用区间&quot;&gt;&lt;a href=&quot;#这两种报头的作用区间&quot; class=&quot;headerlink&quot; title=&quot;这两种报头的作用区间&quot;&gt;&lt;/a&gt;这两种报头的作用区间&lt;/h3&gt;&lt;p&gt;&lt;img src=&quot;https://segmentfault.com/img/bVqjxa&quot; alt=&quot;clipboard.png&quot;&gt;&lt;br&gt;借用一张简洁的图来展示它们的作用区间的区别&lt;/p&gt;
+&lt;h3 id=&quot;GET与-POST&quot;&gt;&lt;a href=&quot;#GET与-POST&quot; class=&quot;headerlink&quot; title=&quot;GET与 POST&quot;&gt;&lt;/a&gt;GET与 POST&lt;/h3&gt;&lt;p&gt;只有GET请求才会触发浏览器的缓存机制.这也是 GET和 POST 的区别之一. GET 的目的应该是请求资源并且不会对服务器上的数据产生改动,是幂等的.而 POST 的目的就是为了修改数据.所以对于一些GET 方法的Ajax也可以使用响应报头的方法进行缓存,  jQuery 里的 ajax 方法里的 cache=false 就只对 GET 方法有效,原理是在 url 后加上一个时间戳类似于 &lt;a href=&quot;http://www.test.com?a=b_201510300000,以防止浏览器缓存请求&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://www.test.com?a=b_201510300000,以防止浏览器缓存请求&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&quot;通过-manifest-html5&quot;&gt;&lt;a href=&quot;#通过-manifest-html5&quot; class=&quot;headerlink&quot; title=&quot;通过 manifest(html5)&quot;&gt;&lt;/a&gt;通过 manifest(html5)&lt;/h2&gt;&lt;p&gt;manifest 是 一种新的缓存方式,通过 manifest 可以让网页离线使用.下面我总结下在使用 manifest 的时候一些要注意的地方,应该工作上没有使用 manifest 的场景,所以不做过多的深入&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;manifest文件 的 content-type必须是’text/cache-manifest’,不然浏览器会不识别这是缓存文件.&lt;/li&gt;
+&lt;li&gt;引入 manifest 的方式是&lt;html lang=&quot;en&quot; manifest=&quot;hello.manifest&quot;&gt;,默认的引入的 html 文件也会被缓存.&lt;/html&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;manifest 文件的格式类似&lt;/p&gt;
+&lt;figure class=&quot;highlight javascript&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;CACHE MANIFEST&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;bundle.js&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;p&gt;4.一旦浏览器缓存成功后,下一次浏览器会先使用缓存的文件,然后再发请求检查 manifest 文件是否有变化.所以在下次打开网页前,用户看到的还是旧的文件.你可以使用 window.applicationCache 来控制当发现 manifest 文件过期后自动刷新,这样来保证用户能看到新的内容.&lt;br&gt;5.manifest 文件的检查是根据类似于文件 md5的方式来检查的,也就是说如果你在 manifest 文件里加了一个新空行,浏览器也会认为 manifest 文件有更新,然后重新下载缓存文件以备下次使用.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&quot;通过-webStorageApi-html5&quot;&gt;&lt;a href=&quot;#通过-webStorageApi-html5&quot; class=&quot;headerlink&quot; title=&quot;通过 webStorageApi(html5)&quot;&gt;&lt;/a&gt;通过 webStorageApi(html5)&lt;/h2&gt;&lt;p&gt; webStorageApi 我主要讲一下 localStorage, 因为在工作中有使用场景.在开发新后台主页面的时候,左侧是一个很长的多级菜单,右面是 主内容.大概是这样&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://segmentfault.com/img/bVqFvn&quot; alt=&quot;图片描述&quot;&gt;&lt;br&gt;当左侧菜单拉长时,点击链接跳到新页面,这时左侧菜单的滑动条也要保持在上个页面的滑动位置,这时可以监听点击菜单事件,通过 localStorage 来保存滑动条高度&lt;br&gt;&lt;figure class=&quot;highlight javascript&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;if&lt;/span&gt;(target.attr(&lt;span class=&quot;string&quot;&gt;&#39;href&#39;&lt;/span&gt;) !== &lt;span class=&quot;string&quot;&gt;&quot;javascript:void(0);&quot;&lt;/span&gt;)&amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;if&lt;/span&gt;(&lt;span class=&quot;built_in&quot;&gt;window&lt;/span&gt;.localStorage)&amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        localStorage.setItem(&lt;span class=&quot;string&quot;&gt;&quot;siteScroll&quot;&lt;/span&gt;, scrollTop);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;span class=&quot;keyword&quot;&gt;else&lt;/span&gt;&amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    $(&lt;span class=&quot;string&quot;&gt;&#39;.nav-secondary&#39;&lt;/span&gt;).scrollTop(target.offset().top - menuOffsetTop);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;下次页面打开的时候再获取并设置滑动条的位置&lt;br&gt;&lt;figure class=&quot;highlight javascript&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;if&lt;/span&gt;(&lt;span class=&quot;built_in&quot;&gt;window&lt;/span&gt;.localStorage)&amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;     &lt;span class=&quot;keyword&quot;&gt;var&lt;/span&gt; scrollTop = localStorage.getItem(&lt;span class=&quot;string&quot;&gt;&quot;siteScroll&quot;&lt;/span&gt;);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;     $(&lt;span class=&quot;string&quot;&gt;&#39;.nav-secondary&#39;&lt;/span&gt;).scrollTop(scrollTop);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;因本人水平有限,总结过程中难免出错,还望大家能够指出,谢谢!&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;查阅应用了以下书籍和内容&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;a href=&quot;http://www.alloyteam.com/2012/03/web-cache-2-browser-cache/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://www.alloyteam.com/2012/03/web-cache-2-browser-cache/&lt;/a&gt;&lt;br&gt;html5高级程序设计&lt;/p&gt;
+&lt;/blockquote&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h2&gt;&lt;p&gt;一个网页是如何在浏览器上进行缓存的,其中涉及了哪些机制,有哪些技术可以采用,如何才能最大化利用缓存.个人觉得这些知识点都是一个前端工程师必须
+    
+    </summary>
+    
+      <category term="goToFrontEnd" scheme="http://yoursite.com/categories/goToFrontEnd/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>浏览器同源策略以及跨域请求时可能遇到的问题</title>
+    <link href="http://yoursite.com/2016/02/28/goToFrontEnd/%E6%B5%8F%E8%A7%88%E5%99%A8%E5%90%8C%E6%BA%90%E7%AD%96%E7%95%A5%E4%BB%A5%E5%8F%8A%E8%B7%A8%E5%9F%9F%E8%AF%B7%E6%B1%82%E6%97%B6%E5%8F%AF%E8%83%BD%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98/"/>
+    <id>http://yoursite.com/2016/02/28/goToFrontEnd/浏览器同源策略以及跨域请求时可能遇到的问题/</id>
+    <published>2016-02-28T06:58:24.000Z</published>
+    <updated>2016-02-28T06:58:24.000Z</updated>
+    
+    <content type="html">&lt;h2 id=&quot;跨域请求基础知识&quot;&gt;&lt;a href=&quot;#跨域请求基础知识&quot; class=&quot;headerlink&quot; title=&quot;跨域请求基础知识&quot;&gt;&lt;/a&gt;跨域请求基础知识&lt;/h2&gt;&lt;h3 id=&quot;浏览器的同源策略&quot;&gt;&lt;a href=&quot;#浏览器的同源策略&quot; class=&quot;headerlink&quot; title=&quot;浏览器的同源策略&quot;&gt;&lt;/a&gt;浏览器的同源策略&lt;/h3&gt;&lt;p&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;浏览器的源指的是 协议://域名:端口 这样的URL组合。我们首先要明确几点&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;www.foo.com 和 foo.com 是不同域&lt;/li&gt;
+&lt;li&gt;www.foo.com 和 www.foo.com/b/1 是同域的，因为浏览器的源中不包含路径&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;https 和 http 的协议不同，是不同域&lt;br&gt;当以上三个元素中的一个与网页的document.domain不相同时，浏览器会认为你的请求是跨越请求。&lt;/p&gt;
+&lt;h3 id=&quot;cookie机制&quot;&gt;&lt;a href=&quot;#cookie机制&quot; class=&quot;headerlink&quot; title=&quot;cookie机制&quot;&gt;&lt;/a&gt;cookie机制&lt;/h3&gt;&lt;p&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;经常容易与同源策略搞混的是cookie的发送机制。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;cookie 可以通过设置domain 为 domain=”.foo.com” ， 这样设置如果用户访问的www.foo.com 或是user.foo.com 那么这个cookie都会被发送&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;cookie 可以通过这事path 为 path=”/auto/“ ，这样设置如果用户访问的是www.foo.com/user时将不会发送这个cookie&lt;/p&gt;
+&lt;h3 id=&quot;修改当前域&quot;&gt;&lt;a href=&quot;#修改当前域&quot; class=&quot;headerlink&quot; title=&quot;修改当前域&quot;&gt;&lt;/a&gt;修改当前域&lt;/h3&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;可以通过设置document.domain 为当前域的一个后缀来修改当前域，例如 可以将域名为 www.foo.com 的document.domain 设置为 foo.com  : document.domain=”foo.com”来绕过一些跨域问题。&lt;/p&gt;
+&lt;h2 id=&quot;浏览器-–-浏览器的跨域访问&quot;&gt;&lt;a href=&quot;#浏览器-–-浏览器的跨域访问&quot; class=&quot;headerlink&quot; title=&quot;浏览器 – 浏览器的跨域访问&quot;&gt;&lt;/a&gt;浏览器 – 浏览器的跨域访问&lt;/h2&gt;&lt;p&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;可以通过window.postMessage()来解决浏览器中不同页面不同域名的通信问题&lt;/p&gt;
+&lt;h2 id=&quot;浏览器-–-服务器的跨域访问&quot;&gt;&lt;a href=&quot;#浏览器-–-服务器的跨域访问&quot; class=&quot;headerlink&quot; title=&quot;浏览器 – 服务器的跨域访问&quot;&gt;&lt;/a&gt;浏览器 – 服务器的跨域访问&lt;/h2&gt;&lt;p&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;浏览器跨域访问不同域的服务器的解决方案一般有三种&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;jsonp，利用JavaScript加载没有同域策略的机制。一般返回的数据格式是：callback（json）;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Iframe间通信，在当前页面下append一个Iframe。例如&lt;/p&gt;
+&lt;figure class=&quot;highlight javascript&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$(&lt;span class=&quot;built_in&quot;&gt;document&lt;/span&gt;.body).append(&lt;span class=&quot;string&quot;&gt;&#39;&amp;lt;IFRAME id=&quot;authIframe&quot; style=&quot;display:none&quot;&amp;gt;&#39;&lt;/span&gt;);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;$(&lt;span class=&quot;string&quot;&gt;&#39;iframe#authIframe&#39;&lt;/span&gt;).attr(&lt;span class=&quot;string&quot;&gt;&#39;src&#39;&lt;/span&gt;, CONST_CONTENT_ROOT_URL+&lt;span class=&quot;string&quot;&gt;&#39;/index.jsp&#39;&lt;/span&gt;);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;$(&lt;span class=&quot;string&quot;&gt;&#39;iframe#authIframe&#39;&lt;/span&gt;).load(&lt;span class=&quot;function&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;function&lt;/span&gt;(&lt;span class=&quot;params&quot;&gt;&lt;/span&gt;)&lt;/span&gt;&amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;			&amp;#125;);&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;服务器返回带有HTTP access control 的头来实现跨域访问。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;HTTP-access-control-CORS&quot;&gt;&lt;a href=&quot;#HTTP-access-control-CORS&quot; class=&quot;headerlink&quot; title=&quot;HTTP access control (CORS)&quot;&gt;&lt;/a&gt;HTTP access control (CORS)&lt;/h2&gt;&lt;p&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;使用Access-Control的跨域请求有两种，简单的跨域请求和带有先导请求（options）的跨域请求&lt;/p&gt;
+&lt;h3 id=&quot;简单的跨域请求&quot;&gt;&lt;a href=&quot;#简单的跨域请求&quot; class=&quot;headerlink&quot; title=&quot;简单的跨域请求&quot;&gt;&lt;/a&gt;简单的跨域请求&lt;/h3&gt;&lt;p&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;简单的跨域请求和带有先导请求的跨域请求最大的区别是他不会先发送一个先导请求。&lt;br&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;浏览器对简单的跨域请求的定义是&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;请求方法是get，post，head中的一种&lt;/li&gt;
+&lt;li&gt;content-Type必须为application/x-www-form-urlencoded, multipart/form-data, 或text/plain中的一种&lt;/li&gt;
+&lt;li&gt;没有自定义请求头&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;带有先导请求（options）的跨域请求&quot;&gt;&lt;a href=&quot;#带有先导请求（options）的跨域请求&quot; class=&quot;headerlink&quot; title=&quot;带有先导请求（options）的跨域请求&quot;&gt;&lt;/a&gt;带有先导请求（options）的跨域请求&lt;/h3&gt;&lt;p&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;带有先导请求（options）的跨域请求，浏览器会自动先发送一个options方法的请求到服务器端，并查看相应头里是否有Access-Control头部。值得注意的是options方法的请求并不会携带cookie，也就是如果如果你的请求必须要登陆验证的话那么你就必须构造一个简单请求。&lt;/p&gt;
+&lt;p&gt;下面是一些常用的Access-Control头部&lt;br&gt;请求头&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Access-Control-Request-Method ： 先导请求中的请求头，告诉服务器真实请求的http方法&lt;/li&gt;
+&lt;li&gt;Access-Control-Request-Headers ：先导请求中的请求头，告诉服务器真实请求的http请求头&lt;br&gt;相应头&lt;/li&gt;
+&lt;li&gt;Access-Control-Allow-Origin ：服务器允许跨域请求的origin&lt;/li&gt;
+&lt;li&gt;Access-Control-Expose-Headers ： 允许JavaScript读取的头部&lt;/li&gt;
+&lt;li&gt;Access-Control-Allow-Credentials ：是否允许携带cookie&lt;/li&gt;
+&lt;li&gt;Access-Control-Allow-Methods ：允许的请求方法&lt;/li&gt;
+&lt;li&gt;Access-Control-Allow-Headers ：允许的请求头部&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;a href=&quot;https://developer.mozilla.org/zh-TW/docs/HTTP/Access_control_CORS#Access-Control-Allow-Origin&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;https://developer.mozilla.org/zh-TW/docs/HTTP/Access_control_CORS#Access-Control-Allow-Origin&lt;/a&gt;&lt;br&gt;由于水平有限，出错难免，如有出错，还望指正，谢谢！&lt;/p&gt;
+&lt;/blockquote&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;跨域请求基础知识&quot;&gt;&lt;a href=&quot;#跨域请求基础知识&quot; class=&quot;headerlink&quot; title=&quot;跨域请求基础知识&quot;&gt;&lt;/a&gt;跨域请求基础知识&lt;/h2&gt;&lt;h3 id=&quot;浏览器的同源策略&quot;&gt;&lt;a href=&quot;#浏览器的同源策略&quot; class=&quot;head
+    
+    </summary>
+    
+      <category term="goToFrontEnd" scheme="http://yoursite.com/categories/goToFrontEnd/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>JavaScript函数声明与函数表达式</title>
+    <link href="http://yoursite.com/2016/02/28/goToFrontEnd/js/JavaScript%E5%87%BD%E6%95%B0%E5%A3%B0%E6%98%8E%E4%B8%8E%E5%87%BD%E6%95%B0%E8%A1%A8%E8%BE%BE%E5%BC%8F/"/>
+    <id>http://yoursite.com/2016/02/28/goToFrontEnd/js/JavaScript函数声明与函数表达式/</id>
+    <published>2016-02-28T06:58:24.000Z</published>
+    <updated>2016-02-28T06:58:24.000Z</updated>
+    
+    <content type="html">&lt;h2 id=&quot;JavaScript函数声明与函数表达式&quot;&gt;&lt;a href=&quot;#JavaScript函数声明与函数表达式&quot; class=&quot;headerlink&quot; title=&quot;JavaScript函数声明与函数表达式&quot;&gt;&lt;/a&gt;JavaScript函数声明与函数表达式&lt;/h2&gt;&lt;h3 id=&quot;如何定义一个函数&quot;&gt;&lt;a href=&quot;#如何定义一个函数&quot; class=&quot;headerlink&quot; title=&quot;如何定义一个函数&quot;&gt;&lt;/a&gt;如何定义一个函数&lt;/h3&gt;&lt;p&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;在JavaScript里有两种定义函数的方法&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;函数声明&lt;br&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;function 函数名称 (参数：可选){ 函数体 }&lt;/li&gt;
+&lt;li&gt;函数表达式&lt;br&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;function 函数名称（可选）(参数：可选){ 函数体 }&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&quot;常见的函数定义以及所属的定义方法&quot;&gt;&lt;a href=&quot;#常见的函数定义以及所属的定义方法&quot; class=&quot;headerlink&quot; title=&quot;常见的函数定义以及所属的定义方法&quot;&gt;&lt;/a&gt;常见的函数定义以及所属的定义方法&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;function foo(){} 函数声明&lt;/li&gt;
+&lt;li&gt;var bar = function foo(){}; 函数表达式&lt;/li&gt;
+&lt;li&gt;new function bar(){}; 函数表达式&lt;/li&gt;
+&lt;li&gt;function foo(){ function bar(){} 函数声明}&lt;/li&gt;
+&lt;li&gt;(function(){})() 函数表达式&lt;/li&gt;
+&lt;li&gt;+function(){}() 函数表达式&lt;/li&gt;
+&lt;li&gt;!function(){}() 函数表达式&lt;/li&gt;
+&lt;li&gt;;(function(){})() 函数表达式，分号反正前面没加分号，解析错误&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;函数声明与函数表达式的一些细微的不同&quot;&gt;&lt;a href=&quot;#函数声明与函数表达式的一些细微的不同&quot; class=&quot;headerlink&quot; title=&quot;函数声明与函数表达式的一些细微的不同&quot;&gt;&lt;/a&gt;函数声明与函数表达式的一些细微的不同&lt;/h3&gt;&lt;p&gt;在JavaScript里函数声明会有一个hoist的过程，也就是说在函数执行的之前，函数体就已经被解析了。一个典型的例子&lt;br&gt;&lt;figure class=&quot;highlight javascript&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;11&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;if&lt;/span&gt; (&lt;span class=&quot;literal&quot;&gt;true&lt;/span&gt;) &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;  &lt;span class=&quot;function&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;foo&lt;/span&gt;(&lt;span class=&quot;params&quot;&gt;&lt;/span&gt;) &lt;/span&gt;&amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;&#39;first&#39;&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;  &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;else&lt;/span&gt; &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;  &lt;span class=&quot;function&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;foo&lt;/span&gt;(&lt;span class=&quot;params&quot;&gt;&lt;/span&gt;) &lt;/span&gt;&amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;&#39;second&#39;&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;  &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;foo();&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;正常情况下，得到的结果是 second&lt;br&gt;而&lt;br&gt;&lt;figure class=&quot;highlight javascript&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;3&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;4&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;5&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;6&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;7&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;8&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;9&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;10&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;11&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;12&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;var&lt;/span&gt; foo;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;if&lt;/span&gt; (&lt;span class=&quot;literal&quot;&gt;true&lt;/span&gt;) &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;  foo = &lt;span class=&quot;function&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;function&lt;/span&gt;(&lt;span class=&quot;params&quot;&gt;&lt;/span&gt;) &lt;/span&gt;&amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;&#39;first&#39;&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;  &amp;#125;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;else&lt;/span&gt; &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;  foo = &lt;span class=&quot;function&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;function&lt;/span&gt;(&lt;span class=&quot;params&quot;&gt;&lt;/span&gt;) &lt;/span&gt;&amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;&#39;second&#39;&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;  &amp;#125;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;foo();&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;我们能得到想要的结果&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;a href=&quot;http://www.nowamagic.net/librarys/veda/detail/1630&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;http://www.nowamagic.net/librarys/veda/detail/1630&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;JavaScript函数声明与函数表达式&quot;&gt;&lt;a href=&quot;#JavaScript函数声明与函数表达式&quot; class=&quot;headerlink&quot; title=&quot;JavaScript函数声明与函数表达式&quot;&gt;&lt;/a&gt;JavaScript函数声明与函数表达式&lt;/h2&gt;&lt;
+    
+    </summary>
+    
+      <category term="goToFrontEnd" scheme="http://yoursite.com/categories/goToFrontEnd/"/>
+    
+      <category term="js" scheme="http://yoursite.com/categories/goToFrontEnd/js/"/>
+    
+    
+  </entry>
+  
+</feed>
